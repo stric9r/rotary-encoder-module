@@ -6,7 +6,7 @@ This is meant for bare metal use but could be easily modified for an operating s
 SW or HW debounce up to the developer, not handled here!
  
 One encoder requires two GPIO pins, a DL and CLK for knob turns.
-This encoder also has a push button (non latching) with requires a 3rd GPIO pin
+This encoder also has a push button (non latching) which requires an optional 3rd GPIO pin
 
 Each encoder is referred to as an ```instance_num```  You can have up to ```ROTARY_ENCODER_INSTANCES```; this is configurable.
 NOTE I've only tested with a single physical encoder, but wrote the module to handle multiples. 
@@ -100,3 +100,8 @@ Code is documented using Doxygen. The example code below is the best to reveiw, 
        }
   }
 ```
+
+## Future
+This projects is just to save a module I created while BLE stuff out, its pretty basic.
+
+I also plan to update it to be more of a driver in the future for another project that'll multiple rotary encoders.
