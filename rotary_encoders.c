@@ -281,11 +281,10 @@ static bool rotary_encoder_force_bounds(uint8_t instance_num)
     bool b_above_max = (value > instance_arr[instance_num].knob_max_value);
     bool b_below_min = (value < instance_arr[instance_num].knob_min_value);
 
-    // Should the value be stepped on?
-    if(instance_arr[instance_num].b_knob_allow_step_on)
+    if(b_above_max || b_below_min)
     {
-
-        if(b_above_max || b_below_min)
+        // Should the value be stepped on?
+        if(instance_arr[instance_num].b_knob_allow_step_on)
         {
 
             value = b_above_max ?
@@ -298,25 +297,22 @@ static bool rotary_encoder_force_bounds(uint8_t instance_num)
 
 
             instance_arr[instance_num].knob_value = value;
+
+        }
+        else
+        {
+
+            value = b_above_max ?
+                    instance_arr[instance_num].knob_min_value:
+                    value;
+
+            value = b_below_min ?
+                    instance_arr[instance_num].knob_max_value:
+                    value;
+
         }
 
-    }
-    else
-    {
-            if(b_above_max || b_below_min)
-            {
-
-                value = b_above_max ?
-                        instance_arr[instance_num].knob_min_value:
-                        value;
-
-                value = b_below_min ?
-                        instance_arr[instance_num].knob_max_value:
-                        value;
-
-
-                instance_arr[instance_num].knob_value = value;
-            }
+        instance_arr[instance_num].knob_value = value;
     }
 
     b_status =
