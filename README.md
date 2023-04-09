@@ -9,6 +9,7 @@ One encoder requires two GPIO pins, a DL and CLK for knob turns.
 This encoder also has a push button (non latching) with requires a 3rd GPIO pin
 
 Each encoder is referred to as an ```instance_num```  You can have up to ```ROTARY_ENCODER_INSTANCES```; this is configurable.
+NOTE I've only tested with a single physical encoder, but wrote the module to handle multiples. 
  
 ## Configuration
 Look at ```ROTARY_ENCODER_INSTANCES``` in rotary_encoders.h for how many encoders allowed.
