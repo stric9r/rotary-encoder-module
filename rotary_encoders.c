@@ -210,7 +210,7 @@ bool rotary_encoder_check_event(uint8_t instance_num)
 }
 
 /// Was an alert for rotary encoder set
-/// Right now this is only used to generate an alert of the value being stepped on
+/// Right now this is only used to generate an alert of the value being stepped on or rolled over
 /// @param instance_num Instance number of encoder to check
 /// @return True if knob or switch event occurred, false otherwise
 bool rotary_encoder_check_alert(uint8_t instance_num)
@@ -271,18 +271,19 @@ void rotary_encoder_task(void)
 
 /// Check if bounds are enabled for knob values, and force if so
 /// @param instance Instance number to track in module
-/// @return True if encoder was stepped on, false otherwise
+/// @return True if encoder was stepped on or rolled over, false otherwise
 static bool rotary_encoder_force_bounds(uint8_t instance_num)
 {
     bool b_status = false;
 
+    int16_t value = instance_arr[instance_num].knob_value;
+
+    bool b_above_max = (value > instance_arr[instance_num].knob_max_value);
+    bool b_below_min = (value < instance_arr[instance_num].knob_min_value);
+
     // Should the value be stepped on?
     if(instance_arr[instance_num].b_knob_allow_step_on)
     {
-        int16_t value = instance_arr[instance_num].knob_value;
-
-        bool b_above_max = (value > instance_arr[instance_num].knob_max_value);
-        bool b_below_min = (value < instance_arr[instance_num].knob_min_value);
 
         if(b_above_max || b_below_min)
         {
@@ -299,11 +300,28 @@ static bool rotary_encoder_force_bounds(uint8_t instance_num)
             instance_arr[instance_num].knob_value = value;
         }
 
-        b_status =
-                instance_arr[instance_num].b_alert_occured =
-                (b_above_max || b_below_min);
-
     }
+    else
+    {
+            if(b_above_max || b_below_min)
+            {
+
+                value = b_above_max ?
+                        instance_arr[instance_num].knob_min_value:
+                        value;
+
+                value = b_below_min ?
+                        instance_arr[instance_num].knob_max_value:
+                        value;
+
+
+                instance_arr[instance_num].knob_value = value;
+            }
+    }
+
+    b_status =
+            instance_arr[instance_num].b_alert_occured =
+            (b_above_max || b_below_min);
 
     return b_status;
 }
