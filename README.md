@@ -4,13 +4,13 @@ Rotary encoder interface for KY-040
 The module is made in a way to allow multiple rotary encoders to be used with other GPIO interrupts.
 This is meant for bare metal use but could be easily modified for an operating system.
 SW or HW debounce up to the developer, not handled here!
- 
+
 One encoder requires two GPIO pins, a DL and CLK for knob turns.
 This encoder also has a push button (non latching) which requires an optional 3rd GPIO pin
 
 Each encoder is referred to as an ```instance_num```  You can have up to ```ROTARY_ENCODER_INSTANCES```; this is configurable.
-NOTE I've only tested with a single physical encoder, but wrote the module to handle multiples. 
- 
+NOTE I've only tested with a single physical encoder, but wrote the module to handle multiples.
+
 ## Configuration
 Look at ```ROTARY_ENCODER_INSTANCES``` in rotary_encoders.h for how many encoders allowed.
 
@@ -35,69 +35,64 @@ Code is documented using Doxygen. The example code below is the best to reveiw, 
 
 
 ## Example Code
-  
+
  ```
   #include "rotary_encoder.h"
- 
+
   int main(...)
   {
- 
+
        uint8_t const volume_instance_id = 0;
        rotary_encoder_init(volume_instance_id,
                            0,     // min value
                            255,   // max value
                            true,  // step on max/min values, no roll over
                            true); // clockwise turn is positive increment
- 
+
        //MCU specific that setups up gpio and interrupts
        mcu_gpio_init(...);
- 
+
        for (;;)
        {
            rotary_encoder_task();
- 
+
            // Was an interrupt captured and handled?  Update app
            if(rotary_encoder_check_event(instance_id))
            {
                app_update_volume(rotary_encoder_get_knob_value(volume_instance_idinstance_id));
            }
- 
+
            // Was the value stepped on?  Ding the user
            if(rotary_encoder_check_alert(instance_id))
            {
                app_alert_user_with_sound();
            }
        }
- 
+
        return 0;
   }
- 
+
   // MCU specific, psuedo-ish code
   // Software or HW debounce up to the developer, not handled here
   MCU_GPIO_INTERRUPT()
   {
-       // Rotary encoder 0 instance_id CLK pin interrupt flag
-       // transition low to high
-       if (PORT0_FLAGS & pinCLK_IF)
-       {
-          g_rotary_encoder_instance_num = 0;
- 
-          // Clock high, DT high == Counter clockwise rotation
-          // Clock high, DT low == Clockwise rotation
-          g_rotary_encoder_flags |= mcu_get_pin_state(pinDT) ?
-                                    ROTARY_ENCODER_FLAG_CDW :
-                                    ROTARY_ENCODER_FLAG_CW;
-       }
- 
-       // Rotary encoder 0 instance_id SW pin interrupt flag
-       if (PORT0_FLAGS & pinSW_IF)
-       {
-          g_rotary_encoder_instance_num = 0;
- 
-          // Clock high, DT low == Counter clockwise rotation
-          // Clock high, DT high == Clockwise rotation
-          g_rotary_encoder_flags |= ROTARY_ENCODER_FLAG_SW;
-       }
+     // Interrupt on rotary encoder clock?
+    if (0u != (GPIO_IntGetEnabled() & ROTARY0_CLK_PIN_MASK))
+    {
+        //Check state of ROTARY0_DT_PIN.  High == CCW rotation
+       uint8_t flag = GPIO_PinInGet(ROTARY0_DT_PORT, ROTARY0_DT_PIN) ?
+                      ROTARY_ENCODER_FLAG_CCW :
+                      ROTARY_ENCODER_FLAG_CW;
+
+       rotary_encoder_set_flags(0, flag);
+
+    }
+
+    // Interrupt on rotary encoder 0 switch?
+    if (0u != (GPIO_IntGetEnabled() & ROTARY0_SW_PIN_MASK))
+    {
+       rotary_encoder_set_flags(0, ROTARY_ENCODER_FLAG_SW);;
+    }
   }
 ```
 
