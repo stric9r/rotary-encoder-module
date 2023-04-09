@@ -10,10 +10,10 @@ This encoder also has a push button (non latching) with requires a 3rd GPIO pin
 
 Each encoder is referred to as an ```instance_num```  You can have up to ```ROTARY_ENCODER_INSTANCES```; this is configurable.
  
-#Configuration
+## Configuration
 Look at ```ROTARY_ENCODER_INSTANCES``` in rotary_encoders.h for how many encoders allowed.
 
-#Interrupts
+## Interrupts
 The developer will need assign required pins for input, and write interrupt routine trigger on the CLK line.
 See Example Code section below for clarification.
 
@@ -24,7 +24,7 @@ For the module to act on any intterupt events in ```rotary_encoder_task(void)```
 Set ```g_rotary_encoder_flags``` to ```ROTARY_ENCODER_FLAG_CW``` or ```ROTARY_ENCODER_FLAG_CDW``` or ```ROTARY_ENCODER_FLAG_SW```
 Set ```g_rotary_encoder_instance_num``` to the instance number of the rotary encoder used.
 
-#Usage
+## Usage
 Code is documented using Doxygen. The example code below is the best to reveiw, but here are some definitions to help understand:
 
 *instance* each rotary encoder is an instance.
@@ -33,7 +33,7 @@ Code is documented using Doxygen. The example code below is the best to reveiw, 
 *clockwise or counter clockwise* the direction of the knob turn.  Clockwise is considered positive, while counter clockwise is considered negative.
 
 
-##Example Code
+## Example Code
   
  ```
   #include "rotary_encoder.h"
