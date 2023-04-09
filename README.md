@@ -1,7 +1,7 @@
 # rotary-encoder-module
 Rotary encoder interface for KY-040
 
-The driver is made in a way to allow multiple encoders to be used with other GPIO interrupts.
+The module is made in a way to allow multiple rotary encoders to be used with other GPIO interrupts.
 This is meant for bare metal use but could be easily modified for an operating system.
 SW or HW debounce up to the developer, not handled here!
  
