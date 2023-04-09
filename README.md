@@ -22,16 +22,16 @@ When an interrupt is triggered, the CLK must be compared agains the DT to determ
 CLK HIGH and DT HIGH is clockwise, CLK HIGH and DT LOW is counter clockwise.
 
 For the module to act on any intterupt events in ```rotary_encoder_task(void)``` the following must be set.
-Set ```g_rotary_encoder_flags``` to ```ROTARY_ENCODER_FLAG_CW``` or ```ROTARY_ENCODER_FLAG_CDW``` or ```ROTARY_ENCODER_FLAG_SW```
-Set ```g_rotary_encoder_instance_num``` to the instance number of the rotary encoder used.
+- Set ```g_rotary_encoder_flags``` to ```ROTARY_ENCODER_FLAG_CW``` or ```ROTARY_ENCODER_FLAG_CDW``` or ```ROTARY_ENCODER_FLAG_SW```
+- Set ```g_rotary_encoder_instance_num``` to the instance number of the rotary encoder used.
 
 ## Usage
 Code is documented using Doxygen. The example code below is the best to reveiw, but here are some definitions to help understand:
 
-*instance* each rotary encoder is an instance.
-*min/max value* each rotary encoder can be set to a minimum and maximum value.
-*step on* regarding the min/max values, there is an option to step on the value if the min/max is reached.  If not set, then there will be a roll over.
-*clockwise or counter clockwise* the direction of the knob turn.  Clockwise is considered positive, while counter clockwise is considered negative.
+- **instance** each rotary encoder is an instance.
+- **min/max value** each rotary encoder can be set to a minimum and maximum value.
+- **step on** regarding the min/max values, there is an option to step on the value if the min/max is reached.  If not set, then there will be a roll over.
+- **clockwise or counter clockwise** the direction of the knob turn.  Clockwise is considered positive, while counter clockwise is considered negative.
 
 
 ## Example Code
