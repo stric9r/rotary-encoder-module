@@ -29,9 +29,9 @@ For the module to act on any intterupt events in ```rotary_encoder_task(void)```
 Code is documented using Doxygen. The example code below is the best to reveiw, but here are some definitions to help understand:
 
  - **instance** - each rotary encoder is an instance.
- - **min/max value** each rotary encoder can be set to a minimum and maximum value.
- - **step on** regarding the min/max values, there is an option to step on the value if the min/max is reached.  If not set, then there will be a roll over.
- - **clockwise or counter clockwise** the direction of the knob turn.  Clockwise is considered positive, while counter clockwise is considered negative.
+ - **min/max value** - each rotary encoder can be set to a minimum and maximum value.
+ - **step on** regarding - the min/max values, there is an option to step on the value if the min/max is reached.  If not set, then there will be a roll over.
+ - **clockwise or counter clockwise** - the direction of the knob turn.  Clockwise is considered positive, while counter clockwise is considered negative.
 
 
 ## Example Code
