@@ -49,7 +49,7 @@ Code is documented using Doxygen. The example code below is the best to reveiw, 
                            true,  // step on max/min values, no roll over
                            true); // clockwise turn is positive increment
  
-       //mcu specific, psuedo-ish code
+       //MCU specific that setups up gpio and interrupts
        mcu_gpio_init(...);
  
        for (;;)
