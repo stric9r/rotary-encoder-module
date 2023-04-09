@@ -11,10 +11,10 @@
 ///
 #include "rotary_encoders.h"
 
-/// Flags that interrupt triggers
-volatile uint8_t g_rotary_encoder_flags = 0;
-/// Instance number for flags
-volatile uint8_t g_rotary_encoder_instance_num = 0;
+/// Flags used to track events from interrupts, each bit is the instance flagged
+volatile uint32_t rotary_encoder_cw_flags = 0;
+volatile uint32_t rotary_encoder_ccw_flags = 0;
+volatile uint32_t rotary_encoder_sw_flags = 0;
 
 ///@todo If knob_min/max == INT16_MIN/MAX there will be some glitches.
 ///      If your rotary encoder requires 32767 points then this code is probably
@@ -46,12 +46,12 @@ static bool rotary_encoder_force_bounds(uint8_t instance_num);
 static bool rotary_encoder_initialized(uint8_t instance_num);
 
 /// Init instance of rotary encoder
-/// @param instance Instance number to track in module
-/// @param min_value Min value the knob can report
-/// @param max_value Max value the knob can report
-/// @param step_on   True if step on value if meets max/min
-///                  False if allow rollover from max to min, and min to max
-/// @param cw_rot_ps True if clockwise rotation is positive, false if negative
+/// @param instance_num Instance number to track in module
+/// @param min_value    Min value the knob can report
+/// @param max_value    Max value the knob can report
+/// @param step_on      True if step on value if meets max/min
+///                     False if allow rollover from max to min, and min to max
+/// @param cw_rot_ps    True if clockwise rotation is positive, false if negative
 /// @return True on success, false on error
 bool rotary_encoder_init(uint8_t const instance_num,
                          int16_t const min_value,
@@ -84,7 +84,7 @@ bool rotary_encoder_init(uint8_t const instance_num,
 }
 
 /// Get the rotary encoder relative knob value
-/// @param instance Instance number of encoder to get
+/// @param instance_num Instance number of encoder to get
 /// @return The knob value, 0 if not valid instance
 int16_t rotary_encoder_get_knob_value(uint8_t const instance_num)
 {
@@ -100,7 +100,7 @@ int16_t rotary_encoder_get_knob_value(uint8_t const instance_num)
 }
 
 /// Get the rotary encoder switch value
-/// @param instance Instance number of encoder to get
+/// @param instance_num Instance number of encoder to get
 /// @return The switch value
 bool rotary_encoder_get_switch_value(uint8_t const instance_num)
 {
@@ -117,7 +117,7 @@ bool rotary_encoder_get_switch_value(uint8_t const instance_num)
 
 /// Set the rotary encoder relative knob value
 /// @param instance_num Instance number of encoder to set
-/// @param value Value to set the knob.
+/// @param value        Value to set the knob.
 /// @return True on success, false on error
 bool rotary_encoder_set_knob_value(uint8_t const instance_num,
                                    int16_t const value)
@@ -192,6 +192,44 @@ bool rotary_encoder_tog_switch_value(uint8_t const instance_num)
     return b_status;
 }
 
+/// Set rotary encoder flags
+/// This is meant to be used in an interrupt, or to trigger an event manually
+/// It will only set the flags, never clear them.  Flags are cleared when read.
+/// @param instance_num Instance number of encoder flags to set
+/// @param flag         The flag value to set. Valid options are:
+///                     ROTARY_ENCODER_FLAG_CW  (Clockwise)
+///                     ROTARY_ENCODER_FLAG_CCW (Counter clockwise)
+///                     ROTARY_ENCODER_FLAG_SW  (Switch)
+/// @return True if flags were set, false if not
+bool rotary_encoder_set_flags(uint8_t const instance_num,
+                              uint8_t const flag)
+{
+    bool b_status = false;
+
+    if(rotary_encoder_initialized(instance_num))
+    {
+        if(ROTARY_ENCODER_FLAG_CW  == flag)
+        {
+            rotary_encoder_cw_flags |= (1u << instance_num);
+            b_status = true;
+        }
+
+        if(ROTARY_ENCODER_FLAG_CCW  == flag)
+        {
+            rotary_encoder_ccw_flags |= (1u << instance_num);
+            b_status = true;
+        }
+
+        if(ROTARY_ENCODER_FLAG_SW  == flag)
+        {
+            rotary_encoder_sw_flags |= (1u << instance_num);
+            b_status = true;
+        }
+    }
+
+    return b_status;
+}
+
 /// Was an interrupt handled for rotary encoder
 /// @param instance_num Instance number of encoder to check
 /// @return True if knob or switch event occurred, false otherwise
@@ -210,7 +248,7 @@ bool rotary_encoder_check_event(uint8_t instance_num)
 }
 
 /// Was an alert for rotary encoder set
-/// Right now this is only used to generate an alert of the value being stepped on or rolled over
+/// Right now this is only used to generate an alert of the value being stepped on
 /// @param instance_num Instance number of encoder to check
 /// @return True if knob or switch event occurred, false otherwise
 bool rotary_encoder_check_alert(uint8_t instance_num)
@@ -230,41 +268,52 @@ bool rotary_encoder_check_alert(uint8_t instance_num)
 /// Flagged based task to handle interrupts regarding the encoder knob
 void rotary_encoder_task(void)
 {
-    uint8_t const tmp_flag = g_rotary_encoder_flags;
-    uint8_t const tmp_instance = g_rotary_encoder_instance_num;
-    g_rotary_encoder_flags = 0;
-    g_rotary_encoder_instance_num = 0;
 
-    if((0 != tmp_flag) && rotary_encoder_initialized(tmp_instance))
+    // Read what the interrupts set, then clear them
+    uint32_t const tmp_cw_flags = rotary_encoder_cw_flags;
+    uint32_t const tmp_ccw_flags = rotary_encoder_ccw_flags;
+    uint32_t const tmp_sw_flags = rotary_encoder_sw_flags;
+
+     rotary_encoder_cw_flags = 0;
+     rotary_encoder_ccw_flags = 0;
+     rotary_encoder_sw_flags = 0;
+
+    // Loop through and make changes as needed
+    for(uint8_t i = 0; i < ROTARY_ENCODER_INSTANCES; i++)
     {
-        bool b_tmp_cw_pos = instance_arr[tmp_instance].b_knob_cw_rot_positive;
+        // Check if any flags set first
+        bool b_increment = (0 != ((1<<i) & tmp_cw_flags));
+        bool b_decrement = (0 != ((1<<i) & tmp_ccw_flags));
+        bool b_switch    = (0 != ((1<<i) & tmp_sw_flags));
 
-        ///@todo ugly ugly ugly code
-        /// If CW and CW positive OR CCW and CW negative then increment
-        bool b_increment = ((0 != (tmp_flag & ROTARY_ENCODER_FLAG_CW)) &&
-                            (b_tmp_cw_pos))
-                            ||
-                           ((0 != (tmp_flag & ROTARY_ENCODER_FLAG_CCW)) &&
-                            (!b_tmp_cw_pos));
+        bool b_event = b_increment || b_decrement || b_switch;
 
-
-        // Flags set, handle them
-        if(b_increment)
+        if(b_event && rotary_encoder_initialized(i))
         {
-            rotary_encoder_inc_knob_value(tmp_instance);
-        }
+            bool b_tmp_cw_pos = instance_arr[i].b_knob_cw_rot_positive;
 
-        if(!b_increment)
-        {
-            rotary_encoder_dec_knob_value(tmp_instance);
-        }
+            // Flags set, handle them
+            if(b_increment)
+            {
+                b_tmp_cw_pos ?
+                        rotary_encoder_inc_knob_value(i) :
+                        rotary_encoder_dec_knob_value(i);
+            }
 
-        if(0 != (tmp_flag & ROTARY_ENCODER_FLAG_SW))
-        {
-            rotary_encoder_tog_switch_value(tmp_instance);
-        }
+            if(b_decrement)
+            {
+                    b_tmp_cw_pos ?
+                            rotary_encoder_dec_knob_value(i) :
+                            rotary_encoder_inc_knob_value(i);
+            }
 
-        instance_arr[tmp_instance].b_event_occured = true;
+            if(b_switch)
+            {
+                rotary_encoder_tog_switch_value(i);
+            }
+
+            instance_arr[i].b_event_occured = true;
+        }
     }
 
 }
