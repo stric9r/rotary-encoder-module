@@ -42,8 +42,8 @@ typedef struct rotary_encoder
 static rotary_encoder_t instance_arr[ROTARY_ENCODER_INSTANCES] = {0};
 
 
-static bool rotary_encoder_force_bounds(uint8_t instance_num);
-static bool rotary_encoder_initialized(uint8_t instance_num);
+static bool rotary_encoder_force_bounds(uint8_t const instance_num);
+static bool rotary_encoder_initialized(uint8_t const instance_num);
 
 /// Init instance of rotary encoder
 /// @param instance_num Instance number to track in module
@@ -233,7 +233,7 @@ bool rotary_encoder_set_flags(uint8_t const instance_num,
 /// Was an interrupt handled for rotary encoder
 /// @param instance_num Instance number of encoder to check
 /// @return True if knob or switch event occurred, false otherwise
-bool rotary_encoder_check_event(uint8_t instance_num)
+bool rotary_encoder_check_event(uint8_t const instance_num)
 {
     bool b_status = false;
 
@@ -251,7 +251,7 @@ bool rotary_encoder_check_event(uint8_t instance_num)
 /// Right now this is only used to generate an alert of the value being stepped on
 /// @param instance_num Instance number of encoder to check
 /// @return True if knob or switch event occurred, false otherwise
-bool rotary_encoder_check_alert(uint8_t instance_num)
+bool rotary_encoder_check_alert(uint8_t const instance_num)
 {
     bool b_status = false;
 
@@ -321,7 +321,7 @@ void rotary_encoder_task(void)
 /// Check if bounds are enabled for knob values, and force if so
 /// @param instance Instance number to track in module
 /// @return True if encoder was stepped on or rolled over, false otherwise
-static bool rotary_encoder_force_bounds(uint8_t instance_num)
+static bool rotary_encoder_force_bounds(uint8_t const instance_num)
 {
     bool b_status = false;
 
@@ -374,7 +374,7 @@ static bool rotary_encoder_force_bounds(uint8_t instance_num)
 /// Check if the instance is initialized
 /// @param instance Instance number to track in module
 /// @return True if encoder was initialized, false otherwise
-static bool rotary_encoder_initialized(uint8_t instance_num)
+static bool rotary_encoder_initialized(uint8_t const instance_num)
 {
     bool b_status = (ROTARY_ENCODER_INSTANCES > instance_num);
     b_status &= instance_arr[instance_num].b_initialized;

@@ -47,7 +47,7 @@ bool rotary_encoder_set_flags(uint8_t const instance_num,
                               uint8_t const flag);
 
 bool rotary_encoder_check_event(uint8_t const instance_num);
-bool rotary_encoder_check_alert(uint8_t instance_num);
+bool rotary_encoder_check_alert(uint8_t const instance_num);
 void rotary_encoder_task(void);
 
 #endif /* ROTARY_ENCODERS_H_ */
