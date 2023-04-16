@@ -22,9 +22,10 @@ See Example Code section below for clarification.
 When an interrupt is triggered, the CLK must be compared agains the DT to determine if clockwise or counter clockwise motion.
 CLK HIGH and DT HIGH is clockwise, CLK HIGH and DT LOW is counter clockwise.
 
-For the module to act on any intterupt events in ```rotary_encoder_task(void)``` the following must be set.
- - Set ```g_rotary_encoder_flags``` to ```ROTARY_ENCODER_FLAG_CW``` or ```ROTARY_ENCODER_FLAG_CDW``` or ```ROTARY_ENCODER_FLAG_SW```
- - Set ```g_rotary_encoder_instance_num``` to the instance number of the rotary encoder used.
+For the module to act on any interrupt events in ```rotary_encoder_task(void)``` the following must be set.
+ - Call ```g_rotary_encoder_set_flags(...)``` during an interrupt
+    - Specify the encoder instance number
+    - Specify flags to set```ROTARY_ENCODER_FLAG_CW``` or ```ROTARY_ENCODER_FLAG_CDW``` or ```ROTARY_ENCODER_FLAG_SW```
 
 ## Usage
 Code is documented using Doxygen. The example code below is the best to reveiw, but here are some definitions to help understand:
@@ -96,8 +97,3 @@ Code is documented using Doxygen. The example code below is the best to reveiw, 
     }
   }
 ```
-
-## Future
-This projects is just to save a module I created while BLE stuff out, its pretty basic.
-
-I also plan to update it to be more of a driver in the future for another project that'll multiple rotary encoders.
