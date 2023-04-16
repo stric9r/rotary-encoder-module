@@ -1,5 +1,5 @@
 # rotary-encoder-module
-Rotary encoder interface for KY-040
+Rotary encoder interface.  Developed using KY-040 rotary encoder but can be used with any quadrature encoder.
 
 Short demo of this module working here: https://www.youtube.com/watch?v=H6LCRhiRQaU
 
